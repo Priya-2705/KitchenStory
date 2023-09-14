@@ -1,0 +1,73 @@
+package mypackage.config;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.ldap.EmbeddedLdapServerContextSourceFactoryBean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import mypackage.services.CustomUserDetailService;
+
+@SuppressWarnings("deprecation")
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig<BaseLdapPathContextSource> extends WebSecurityConfigurerAdapter{
+	
+	@Autowired
+	private CustomUserDetailService customUserDetailService;
+	
+	@Autowired
+	private JwtAuthEntryPoint entryPoint;
+	
+	@Autowired
+	JwtAuthFilter authFilter;
+
+	@Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http
+			.csrf()
+			.disable()
+			.cors().and()
+			.authorizeRequests()
+			.antMatchers("/token").permitAll()
+			.antMatchers("/changePassword").permitAll()
+			.antMatchers("/getProduct/**").permitAll()
+			.antMatchers("/getItem/**").permitAll()
+			.antMatchers("/order").permitAll()
+			.antMatchers("/getOrder/**").permitAll()
+			.anyRequest().authenticated()
+			.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+			.and().exceptionHandling().authenticationEntryPoint(entryPoint);
+		http.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
+		
+	}
+
+	@Bean
+    public EmbeddedLdapServerContextSourceFactoryBean contextSourceFactoryBean() {
+        EmbeddedLdapServerContextSourceFactoryBean contextSourceFactoryBean =
+            EmbeddedLdapServerContextSourceFactoryBean.fromEmbeddedLdapServer();
+        contextSourceFactoryBean.setPort(0);
+        return contextSourceFactoryBean;
+    }
+
+    @Bean
+    AuthenticationManager ldapAuthenticationManager(BaseLdapPathContextSource contextSource) {
+        LdapBindAuthenticationManagerFactory factory = 
+            new LdapBindAuthenticationManagerFactory(contextSource);
+        factory.setUserDnPatterns("uid={0},ou=people");
+        factory.setUserDetailsContextMapper(new PersonContextMapper());
+        return factory.createAuthenticationManager();
+    }
+	@Bean
+	public BCryptPasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder(10);
+	}
+}

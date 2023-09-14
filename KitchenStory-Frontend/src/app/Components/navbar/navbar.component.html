@@ -1,0 +1,15 @@
+<header>
+    <nav class="navbar navbar-dark" style="background-color: #659DBD;">
+        <a class="navbar-brand" href="#">
+            <img src="/assets/images/logo.png" alt="Logo" width="170" height="40" class="d-inline-block align-text-top">
+          </a>
+        
+        <a *ngIf="loggedIn" class="navbar-brand" routerLink="/dashboard" style="color: #501B1D; font-weight: 600;">Admin Dashboard</a>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a *ngIf="!loggedIn" routerLink="/login" role="button" class="btn btn-success">Admin Login</a>
+                <a *ngIf="loggedIn" (click)="logoutAdmin()" role="button" class="btn btn-danger">Logout</a>
+            </li>
+        </ul>
+    </nav>
+</header>

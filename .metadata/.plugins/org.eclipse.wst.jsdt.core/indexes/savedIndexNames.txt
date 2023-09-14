@@ -1,0 +1,5 @@
+INDEX VERSION 1.4+C:\Users\PRIYA\Simplilearn\Final Projects\Phase4Projects\KitchenStory\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+3032925315.index
+1773319515.index
+3022141739.index
+145644480.index
